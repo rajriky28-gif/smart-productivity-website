@@ -44,7 +44,7 @@ const PhilosophyPage = () => {
                         className="max-w-4xl mx-auto"
                     >
                         <span className="text-[10px] uppercase tracking-[0.6em] font-black text-white/40 mb-10 block">Our Philosophy</span>
-                        <h1 className="text-7xl md:text-[10rem] font-black tracking-tighter uppercase mb-12 leading-none">PURE<br />INTENT</h1>
+                        <h1 className="text-5xl md:text-[10rem] font-black tracking-tighter uppercase mb-12 leading-tight">PURE<br className="md:hidden" /> INTENT</h1>
                         <p className="text-xl md:text-2xl text-gray-500 leading-tight font-medium max-w-2xl mx-auto mb-12">
                             Challenging the status quo of software complexity. We build for those who prioritize output over organization.
                         </p>
@@ -53,14 +53,16 @@ const PhilosophyPage = () => {
                 </div>
 
                 {/* Scroll Indicator */}
-                <motion.div
-                    animate={{ y: [0, 10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4"
-                >
-                    <span className="text-[10px] uppercase tracking-[0.4em] text-white/20 font-black">Explore Ethos</span>
-                    <div className="w-[1px] h-12 bg-gradient-to-b from-white/40 to-transparent" />
-                </motion.div>
+                <div className="absolute bottom-4 left-0 w-full flex justify-center pointer-events-none">
+                    <motion.div
+                        animate={{ y: [0, 10, 0] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="flex flex-col items-center gap-4"
+                    >
+                        <span className="text-[10px] uppercase tracking-[0.4em] text-white/20 font-black">Explore Ethos</span>
+                        <div className="w-[1px] h-12 bg-gradient-to-b from-white/40 to-transparent" />
+                    </motion.div>
+                </div>
             </section>
 
             {/* Narrative Section */}
@@ -75,7 +77,7 @@ const PhilosophyPage = () => {
                         >
                             <Quote size={80} className="text-white opacity-10 absolute -top-12 -left-8" />
                             <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-12 leading-tight">
-                                THE DEATH OF<br />DIGITAL NOISE.
+                                THE DEATH OF<br className="md:hidden" /> DIGITAL NOISE.
                             </h2>
                             <p className="text-xl text-gray-400 leading-relaxed font-medium mb-12">
                                 Modern tools focus on managing work rather than doing it. We believe the best tool is one that disappears, leaving nothing but you and your flow.
@@ -101,7 +103,7 @@ const PhilosophyPage = () => {
                     <div className="flex flex-col md:flex-row gap-20 items-end mb-32 border-b-2 border-black pb-12">
                         <div className="flex-1">
                             <span className="text-[10px] uppercase tracking-[0.6em] font-black text-black/40 mb-6 block">Core Values</span>
-                            <h2 className="text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none text-black">GUIDING<br />PRINCIPLES</h2>
+                            <h2 className="text-4xl md:text-8xl font-black uppercase tracking-tighter leading-tight text-black">GUIDING<br className="md:hidden" /> PRINCIPLES</h2>
                         </div>
                     </div>
 
@@ -138,7 +140,7 @@ const PhilosophyPage = () => {
                         viewport={{ once: false }}
                         className="max-w-4xl mx-auto"
                     >
-                        <h2 className="text-4xl md:text-8xl font-black uppercase tracking-tighter mb-12">THE FUTURE<br />IS SYSTEMIC.</h2>
+                        <h2 className="text-5xl md:text-8xl font-black uppercase tracking-tighter mb-12 leading-tight text-white">THE FUTURE<br className="md:hidden" /> IS SYSTEMIC.</h2>
                         <p className="text-gray-500 mb-16 uppercase tracking-[0.4em] text-[10px] font-black leading-loose max-w-xl mx-auto">
                             We are building more than tools. We are building a methodology for the future of work. Join us in the evolution.
                         </p>

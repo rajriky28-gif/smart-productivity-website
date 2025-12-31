@@ -35,7 +35,7 @@ const Navbar = () => {
         >
           <Link to="/" className="flex items-center gap-2 text-xl font-black tracking-tighter hover:opacity-70 transition-opacity">
             <img src={logo} alt="Smart Productivity Logo" className="w-12 h-12 object-contain brightness-0 invert" />
-            <span>SMART PRODUCTIVITY</span>
+            <span>SMART <span className="hidden sm:inline">PRODUCTIVITY</span></span>
           </Link>
         </motion.div>
 

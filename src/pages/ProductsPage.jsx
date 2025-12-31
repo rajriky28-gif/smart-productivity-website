@@ -51,7 +51,7 @@ const ProductsPage = () => {
                         transition={{ duration: 0.8 }}
                     >
                         <span className="text-[10px] uppercase tracking-[0.6em] font-black text-white/40 mb-10 block">Product Ecosystem</span>
-                        <h1 className="text-7xl md:text-[10rem] font-black tracking-tighter uppercase mb-12 leading-none">THE TOOLS</h1>
+                        <h1 className="text-4xl md:text-[10rem] font-black tracking-tighter uppercase mb-12 leading-tight">THE TOOLS</h1>
                         <p className="text-xl md:text-2xl text-gray-500 leading-tight font-medium max-w-2xl mx-auto mb-12">
                             Precision instruments for high-performance individuals.
                         </p>
@@ -60,14 +60,16 @@ const ProductsPage = () => {
                 </div>
 
                 {/* Scroll Indicator */}
-                <motion.div
-                    animate={{ y: [0, 10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4"
-                >
-                    <span className="text-[10px] uppercase tracking-[0.4em] text-white/20 font-black">Scroll</span>
-                    <div className="w-[1px] h-12 bg-gradient-to-b from-white/40 to-transparent" />
-                </motion.div>
+                <div className="absolute bottom-4 left-0 w-full flex justify-center pointer-events-none">
+                    <motion.div
+                        animate={{ y: [0, 10, 0] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="flex flex-col items-center gap-4"
+                    >
+                        <span className="text-[10px] uppercase tracking-[0.4em] text-white/20 font-black">Scroll</span>
+                        <div className="w-[1px] h-12 bg-gradient-to-b from-white/40 to-transparent" />
+                    </motion.div>
+                </div>
             </section>
 
             {/* Main Product Grid */}
@@ -110,7 +112,7 @@ const ProductsPage = () => {
                                             <span className="w-8 h-[1px] bg-white/10"></span>
                                             {tool.status}
                                         </div>
-                                        <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-8">{tool.name}</h2>
+                                        <h2 className="text-4xl md:text-7xl font-black uppercase tracking-tighter mb-8 leading-tight">{tool.name}</h2>
                                         <div className="text-sm font-black uppercase tracking-[0.3em] text-white/40 mb-8">{tool.tagline}</div>
                                         <p className="text-gray-500 text-lg leading-relaxed mb-12 max-w-md">{tool.desc}</p>
 
@@ -150,7 +152,7 @@ const ProductsPage = () => {
                     <div className="flex flex-col md:flex-row gap-20 items-end mb-32">
                         <div className="flex-1">
                             <span className="text-[10px] uppercase tracking-[0.6em] font-black text-black/40 mb-6 block">Our DNA</span>
-                            <h2 className="text-6xl md:text-9xl font-black uppercase tracking-tighter leading-none text-black">DESIGN<br />STANDARDS</h2>
+                            <h2 className="text-4xl md:text-9xl font-black uppercase tracking-tighter leading-tight text-black">DESIGN<br className="md:hidden" /> STANDARDS</h2>
                         </div>
                         <div className="w-full md:w-1/3 h-[2px] bg-black mb-6"></div>
                     </div>

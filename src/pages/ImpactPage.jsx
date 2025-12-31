@@ -30,7 +30,7 @@ const ImpactPage = () => {
                         className="max-w-4xl mx-auto"
                     >
                         <span className="text-[10px] uppercase tracking-[0.6em] font-black text-white/40 mb-10 block">Our Impact</span>
-                        <h1 className="text-7xl md:text-[10rem] font-black tracking-tighter uppercase mb-12 leading-none">GLOBAL<br />RADIUS</h1>
+                        <h1 className="text-5xl md:text-[10rem] font-black tracking-tighter uppercase mb-12 leading-tight">GLOBAL<br className="md:hidden" /> RADIUS</h1>
                         <p className="text-xl md:text-2xl text-gray-500 leading-tight font-medium max-w-2xl mx-auto mb-12">
                             Quantifying the shift from standard workflows to pure execution. Our reach is global, our focus is singular.
                         </p>
@@ -39,14 +39,16 @@ const ImpactPage = () => {
                 </div>
 
                 {/* Scroll Indicator */}
-                <motion.div
-                    animate={{ y: [0, 10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4"
-                >
-                    <span className="text-[10px] uppercase tracking-[0.4em] text-white/20 font-black">View Metrics</span>
-                    <div className="w-[1px] h-12 bg-gradient-to-b from-white/40 to-transparent" />
-                </motion.div>
+                <div className="absolute bottom-4 left-0 w-full flex justify-center pointer-events-none">
+                    <motion.div
+                        animate={{ y: [0, 10, 0] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="flex flex-col items-center gap-4"
+                    >
+                        <span className="text-[10px] uppercase tracking-[0.4em] text-white/20 font-black">View Metrics</span>
+                        <div className="w-[1px] h-12 bg-gradient-to-b from-white/40 to-transparent" />
+                    </motion.div>
+                </div>
             </section>
 
             {/* Metrics Grid */}
@@ -83,7 +85,7 @@ const ImpactPage = () => {
                             className="flex-1"
                         >
                             <span className="text-[10px] uppercase tracking-[0.6em] font-black text-white/40 mb-10 block">Success Protocol</span>
-                            <h2 className="text-5xl md:text-8xl font-black uppercase tracking-tighter mb-12 leading-tight">PRECISION<br />IN PRACTICE.</h2>
+                            <h2 className="text-4xl md:text-8xl font-black uppercase tracking-tighter mb-12 leading-tight">PRECISION<br className="md:hidden" /> IN PRACTICE.</h2>
                             <p className="text-xl text-gray-400 leading-relaxed font-medium mb-12">
                                 We measure success not by how long people use our apps, but by how quickly they get things done and leave them.
                             </p>
@@ -128,7 +130,7 @@ const ImpactPage = () => {
                         viewport={{ once: false }}
                         className="max-w-4xl mx-auto"
                     >
-                        <h2 className="text-4xl md:text-8xl font-black uppercase tracking-tighter mb-12 text-black">DATA ETHICS<br />BY DEFAULT.</h2>
+                        <h2 className="text-4xl md:text-8xl font-black uppercase tracking-tighter mb-12 text-black leading-tight">DATA ETHICS<br className="md:hidden" /> BY DEFAULT.</h2>
                         <p className="text-gray-500 mb-16 uppercase tracking-[0.4em] text-[10px] font-black leading-loose max-w-xl mx-auto">
                             We do not monetize your focus. We do not sell your data. Our only incentive is the quality of your output.
                         </p>

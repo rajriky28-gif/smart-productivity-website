@@ -110,8 +110,8 @@ const StridePage = () => {
                     <motion.div variants={itemVariants} className="flex justify-center mb-8">
                         <img src={strideLogo} alt="Stride Logo" className="w-32 h-32 object-contain brightness-0 invert" />
                     </motion.div>
-                    <motion.h1 variants={itemVariants} className="text-6xl md:text-8xl font-black tracking-tight mb-8">
-                        VELOCITY <br />
+                    <motion.h1 variants={itemVariants} className="text-4xl md:text-8xl font-black tracking-tight mb-8 leading-tight">
+                        VELOCITY <br className="md:hidden" />
                         <span className="text-transparent border-text text-white/40">ENGINE.</span>
                     </motion.h1>
                     <motion.p variants={itemVariants} className="text-xl text-zinc-400 max-w-2xl mx-auto mb-10 font-light leading-relaxed">
@@ -129,7 +129,7 @@ const StridePage = () => {
                     </motion.div>
                 </motion.div>
 
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+                <div className="absolute bottom-10 left-0 w-full flex flex-col items-center gap-2 pointer-events-none">
                     <div className="w-[1px] h-12 bg-gradient-to-b from-white to-transparent opacity-50" />
                     <span className="text-[10px] tracking-[0.2em] uppercase text-zinc-500">Scroll to Explore</span>
                 </div>
@@ -277,8 +277,8 @@ const StridePage = () => {
                         </div>
 
                         <div className="flex-1 order-1 md:order-2 space-y-10">
-                            <h2 className="text-5xl md:text-7xl font-black tracking-tighter leading-none text-black">
-                                PULSE OF <br />
+                            <h2 className="text-4xl md:text-7xl font-black tracking-tighter leading-none text-black uppercase">
+                                PULSE OF <br className="md:hidden" />
                                 ACTION.
                             </h2>
                             <div className="grid grid-cols-1 gap-6">
@@ -346,8 +346,8 @@ const StridePage = () => {
             <section className="py-32 relative overflow-hidden">
                 <div className="absolute inset-0 bg-white" />
                 <div className="container mx-auto px-4 relative z-10 text-center text-black">
-                    <h2 className="text-6xl md:text-8xl font-black tracking-tighter mb-10 text-black">
-                        JOIN THE <br />
+                    <h2 className="text-5xl md:text-8xl font-black tracking-tighter mb-10 text-black uppercase leading-tight">
+                        JOIN THE <br className="md:hidden" />
                         VELOCITY.
                     </h2>
                     <p className="text-zinc-600 max-w-md mx-auto mb-12 text-lg">

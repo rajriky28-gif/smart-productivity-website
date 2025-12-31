@@ -10,7 +10,7 @@ const Hero = () => {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 0.03, scale: 1 }}
                     transition={{ duration: 2, ease: "easeOut" }}
-                    className="text-[40vw] font-black uppercase tracking-tighter leading-none select-none"
+                    className="text-[40vw] md:text-[40vw] font-black uppercase tracking-tighter leading-none select-none whitespace-nowrap"
                 >
                     SMART
                 </motion.div>
@@ -35,8 +35,8 @@ const Hero = () => {
                     <span className="inline-block px-6 py-2 border border-white/10 rounded-full text-[10px] uppercase tracking-[0.6em] mb-10 bg-white/5 text-white/40">
                         Evolving Efficiency
                     </span>
-                    <h1 className="text-6xl md:text-[10rem] font-black mb-10 leading-none tracking-tighter uppercase">
-                        SMART<br />PRODUCTIVITY
+                    <h1 className="text-4xl md:text-[10rem] font-black mb-10 leading-[0.9] tracking-tighter uppercase">
+                        SMART<br className="md:hidden" /> PRODUCTIVITY
                     </h1>
                     <p className="max-w-2xl mx-auto text-gray-400 text-lg md:text-2xl mb-14 font-medium leading-tight">
                         Precision instruments for high-performance individuals.
@@ -60,14 +60,16 @@ const Hero = () => {
             </div>
 
             {/* Scroll Indicator */}
-            <motion.div
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4"
-            >
-                <span className="text-[10px] uppercase tracking-[0.4em] text-white/20 font-black">Scroll</span>
-                <div className="w-[1px] h-12 bg-gradient-to-b from-white/40 to-transparent" />
-            </motion.div>
+            <div className="absolute bottom-4 left-0 w-full flex justify-center pointer-events-none">
+                <motion.div
+                    animate={{ y: [0, 10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="flex flex-col items-center gap-4"
+                >
+                    <span className="text-[10px] uppercase tracking-[0.4em] text-white/20 font-black">Scroll</span>
+                    <div className="w-[1px] h-12 bg-gradient-to-b from-white/40 to-transparent" />
+                </motion.div>
+            </div>
         </section>
     );
 };
