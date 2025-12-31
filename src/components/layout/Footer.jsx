@@ -21,7 +21,7 @@ const Footer = () => {
                     <div>
                         <h4 className="text-xs uppercase tracking-widest font-bold mb-8 text-white">Products</h4>
                         <ul className="space-y-4 text-gray-500 text-sm">
-                            <li><Link to="/products" className="hover:text-white transition-colors uppercase tracking-widest">Stride</Link></li>
+                            <li><Link to="/stride" className="hover:text-white transition-colors uppercase tracking-widest">Stride</Link></li>
                             <li><Link to="/upcoming" className="hover:text-white transition-colors uppercase tracking-widest">Upcoming</Link></li>
                             <li><Link to="/roadmap" className="hover:text-white transition-colors uppercase tracking-widest">Roadmap</Link></li>
                         </ul>

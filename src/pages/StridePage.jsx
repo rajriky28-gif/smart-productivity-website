@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import strideLogo from '../assets/stride-logo.png';
+import playstoreLogo from '../assets/playstore-logo.png';
 import {
     Zap,
     Target,
@@ -382,7 +383,7 @@ const StridePage = () => {
                             className="bg-black text-white px-8 py-4 rounded-2xl flex items-center gap-4 hover:bg-zinc-900 transition-all shadow-xl group"
                         >
                             <img
-                                src="/src/assets/playstore-logo.png"
+                                src={playstoreLogo}
                                 alt="Google Play"
                                 className="w-8 h-8 object-contain"
                             />
