@@ -33,9 +33,9 @@ const Navbar = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
         >
-          <Link to="/" className="flex items-center gap-2 text-xl font-black tracking-tighter hover:opacity-70 transition-opacity">
-            <img src={logo} alt="Smart Productivity Logo" className="w-12 h-12 object-contain brightness-0 invert" />
-            <span>SMART <span className="hidden sm:inline">PRODUCTIVITY</span></span>
+          <Link to="/" className="flex items-center gap-1.5 sm:gap-2 text-base sm:text-xl font-black tracking-tighter hover:opacity-70 transition-opacity whitespace-nowrap">
+            <img src={logo} alt="Smart Productivity Logo" className="w-10 h-10 sm:w-12 sm:h-12 object-contain brightness-0 invert" />
+            <span>SMART PRODUCTIVITY</span>
           </Link>
         </motion.div>
 
