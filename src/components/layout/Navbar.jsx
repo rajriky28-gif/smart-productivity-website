@@ -1,4 +1,4 @@
-import { Menu, X, User as UserIcon, LogOut, ChevronDown } from 'lucide-react';
+import { Menu, X, User as UserIcon, LogOut, ChevronDown, Layout } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { auth } from '../../firebase';
