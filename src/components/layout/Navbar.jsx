@@ -83,14 +83,16 @@ const Navbar = () => {
                       <span className="text-[10px] uppercase tracking-widest font-black text-white/40 mb-2 block">Identity</span>
                       <div className="text-xs font-bold text-white truncate">{user.email}</div>
                     </div>
-                    <Link
-                      to="/admin"
-                      onClick={() => setShowAccountMenu(false)}
-                      className="w-full flex items-center gap-3 py-3 border-t border-white/10 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors"
-                    >
-                      <Layout size={14} />
-                      Admin Panel
-                    </Link>
+                    {user.email === 'rajriky28@gmail.com' && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setShowAccountMenu(false)}
+                        className="w-full flex items-center gap-3 py-3 border-t border-white/10 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors"
+                      >
+                        <Layout size={14} />
+                        Admin Panel
+                      </Link>
+                    )}
                     <button
                       onClick={() => {
                         signOut(auth);

@@ -28,7 +28,9 @@ const AdminPage = () => {
     const navigate = useNavigate();
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
-            if (!user) navigate('/auth');
+            if (!user || user.email !== 'rajriky28@gmail.com') {
+                navigate('/');
+            }
         });
         return () => unsubscribe();
     }, [navigate]);
