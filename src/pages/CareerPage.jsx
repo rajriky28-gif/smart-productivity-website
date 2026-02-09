@@ -31,11 +31,16 @@ const CareerPage = () => {
         : jobs.filter(j => j.category === selectedCategory);
 
     return (
-        <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="min-h-screen bg-black text-white selection:bg-white selection:text-black"
+        >
             {/* Legend Section */}
-            <section className="h-[60vh] flex items-center justify-center border-b border-white/10 relative overflow-hidden">
+            <section className="h-screen flex items-center justify-center border-b border-white/10 relative overflow-hidden">
                 <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center">
-                    <div className="text-[30vw] font-black opacity-[0.03] select-none uppercase tracking-tighter">FUTURE</div>
+                    <div className="text-[35vw] font-black opacity-[0.03] select-none uppercase tracking-tighter">FUTURE</div>
                 </div>
 
                 <div className="container mx-auto px-6 relative z-10 text-center">
@@ -45,7 +50,7 @@ const CareerPage = () => {
                         className="max-w-4xl mx-auto"
                     >
                         <span className="text-[10px] uppercase tracking-[0.6em] font-black text-white/40 mb-10 block">Careers & Culture</span>
-                        <h1 className="text-5xl md:text-[8rem] font-black tracking-tighter uppercase mb-12 leading-tight">JOIN THE<br className="md:hidden" /> RADIUS</h1>
+                        <h1 className="text-5xl md:text-[10rem] font-black tracking-tighter uppercase mb-12 leading-tight">JOIN THE<br className="md:hidden" /> RADIUS</h1>
                         <p className="text-xl md:text-2xl text-gray-500 leading-tight font-medium max-w-2xl mx-auto mb-12">
                             We're looking for architects of productivity. Those who believe that fewer features mean more focus.
                         </p>
@@ -125,7 +130,7 @@ const CareerPage = () => {
                     </div>
                 </div>
             </section>
-        </div>
+        </motion.div>
     );
 };
 

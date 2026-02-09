@@ -29,9 +29,9 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
+    { name: 'Home', href: '/' },
     { name: 'Products', href: '/products' },
     { name: 'Philosophy', href: '/philosophy' },
-    { name: 'Impact', href: '/impact' },
     { name: 'Careers', href: '/careers' },
     { name: 'Stride', href: '/stride' },
     { name: 'Contact', href: '/contact' },
