@@ -105,6 +105,7 @@ const JobApplicationPage = () => {
             // Prepare submission for Sheets
             const submissionData = {
                 action: 'submitApplication',
+                jobId: job.id,
                 jobTitle: job.title,
                 email: formData['2'] || 'anonymous@protocol.com', // fallback to email field ID '2' or anon
                 responses: { ...responses, ...uploadedFiles },

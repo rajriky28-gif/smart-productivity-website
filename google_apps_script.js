@@ -23,7 +23,7 @@ function setupDatabase() {
     }
 
     // Hard-set columns to match frontend expectations exactly
-    const headers = ["id", "title", "category", "description", "fields", "createdat", "active"];
+    const headers = ["id", "title", "category", "description", "fields", "createdat", "active", "sheetName"];
     master.getRange(1, 1, 1, headers.length).setValues([headers]);
     master.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#f3f3f3");
     master.setFrozenRows(1);
@@ -72,7 +72,7 @@ function fetchJobsList() {
     const lastRow = master.getLastRow();
     if (lastRow <= 1) return [];
 
-    const data = master.getRange(2, 1, lastRow - 1, 7).getValues();
+    const data = master.getRange(2, 1, lastRow - 1, 8).getValues();
     return data.map(row => ({
         id: row[0],
         title: row[1],
@@ -80,7 +80,8 @@ function fetchJobsList() {
         description: row[3],
         fields: row[4] ? JSON.parse(row[4]) : [],
         createdat: row[5],
-        active: row[6]
+        active: row[6],
+        sheetName: row[7]
     }));
 }
 
@@ -89,6 +90,16 @@ function handleCreateJob(data) {
     const master = setupDatabase();
 
     const id = "job_" + Math.random().toString(36).substr(2, 6);
+
+    // Create Job-specific tab for applicants
+    const sheetNameBase = data.title || id;
+    let finalSheetName = sheetNameBase;
+    let suffix = 1;
+    while (ss.getSheetByName(finalSheetName)) {
+        finalSheetName = sheetNameBase + " (" + suffix + ")";
+        suffix++;
+    }
+
     const row = [
         id,
         data.title || "Untitled Position",
@@ -96,20 +107,12 @@ function handleCreateJob(data) {
         data.description || "",
         JSON.stringify(data.fields || []),
         new Date().toISOString(),
-        true
+        true,
+        finalSheetName
     ];
 
     // Append to metadata sheet
     master.appendRow(row);
-
-    // Create Job-specific tab for applicants
-    const sheetName = data.title || id;
-    let finalSheetName = sheetName;
-    let suffix = 1;
-    while (ss.getSheetByName(finalSheetName)) {
-        finalSheetName = sheetName + " (" + suffix + ")";
-        suffix++;
-    }
 
     const jobSheet = ss.insertSheet(finalSheetName);
     const applicantHeaders = ["Source", "Timestamp", ... (data.fields || []).map(f => f.label)];
@@ -125,8 +128,23 @@ function handleCreateJob(data) {
 
 function handleSubmitApplication(data) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const jobSheet = ss.getSheetByName(data.jobTitle);
-    if (!jobSheet) return { error: "Job tab not found" };
+
+    // Find sheetName from MASTER_JOBS using jobId
+    const master = ss.getSheetByName(MASTER_SHEET_NAME);
+    let targetSheetName = data.jobTitle; // fallback
+
+    if (master && data.jobId) {
+        const rows = master.getDataRange().getValues();
+        for (let i = 1; i < rows.length; i++) {
+            if (rows[i][0] === data.jobId) {
+                targetSheetName = rows[i][7] || rows[i][1];
+                break;
+            }
+        }
+    }
+
+    const jobSheet = ss.getSheetByName(targetSheetName);
+    if (!jobSheet) return { error: "Job tab not found: " + targetSheetName };
 
     const headers = jobSheet.getRange(1, 1, 1, jobSheet.getLastColumn()).getValues()[0];
     const rowData = new Array(headers.length).fill("N/A");
