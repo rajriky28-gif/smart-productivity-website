@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { Menu, X, User as UserIcon, LogOut, ChevronDown, Layout } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
