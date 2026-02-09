@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 // REPLACE THIS with your Google Apps Script Web App URL
-const SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbyv7Wi-bztPO5taq8fryr1ZEtEFDlb7toKM344re43wx-u7a7loDcUM2MSy3FV2iLBu/exec';
+const SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbxmW2ayr3TpLKvFdiIKJkPTkWQDgRlUzaTOhboW29jWkPzgvqUSt_d8WHWpL4zbBx-f/exec';
 
 const AdminPage = () => {
     const [jobs, setJobs] = useState([]);
