@@ -16,6 +16,10 @@ import TermsDetailPage from './pages/TermsDetailPage';
 import HelpPage from './pages/HelpPage';
 import HelpDetailPage from './pages/HelpDetailPage';
 import ContactPage from './pages/ContactPage';
+import AuthPage from './pages/AuthPage';
+import CareerPage from './pages/CareerPage';
+import AdminPage from './pages/AdminPage';
+import JobApplicationPage from './pages/JobApplicationPage';
 import { AnimatePresence } from 'framer-motion';
 
 // Scroll to top on route change
@@ -50,6 +54,10 @@ function App() {
             <Route path="/help" element={<HelpPage />} />
             <Route path="/help/:category" element={<HelpDetailPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/careers" element={<CareerPage />} />
+            <Route path="/careers/:jobId" element={<JobApplicationPage />} />
+            <Route path="/admin" element={<AdminPage />} />
           </Routes>
         </AnimatePresence>
 

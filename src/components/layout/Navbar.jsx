@@ -1,13 +1,23 @@
-import { motion } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User as UserIcon, LogOut, ChevronDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { auth } from '../../firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import logo from '../../assets/logo.png';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState(null);
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +32,7 @@ const Navbar = () => {
     { name: 'Products', href: '/products' },
     { name: 'Philosophy', href: '/philosophy' },
     { name: 'Impact', href: '/impact' },
+    { name: 'Careers', href: '/careers' },
     { name: 'Stride', href: '/stride' },
     { name: 'Contact', href: '/contact' },
   ];
@@ -40,26 +51,80 @@ const Navbar = () => {
         </motion.div>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex space-x-10">
+        <div className="hidden md:flex items-center space-x-10">
           {navLinks.map((link, i) => (
-            <motion.div
-              key={link.name}
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-            >
+            <div key={link.name}>
               <Link
                 to={link.href}
                 className={`text-[10px] font-black uppercase tracking-[0.3em] hover:text-white transition-colors ${location.pathname === link.href ? 'text-white' : 'text-white/40'}`}
               >
                 {link.name}
               </Link>
-            </motion.div>
+            </div>
           ))}
+
+          {/* Auth Button */}
+          <div className="relative">
+            {user ? (
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setShowAccountMenu(!showAccountMenu)}
+                  className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 hover:bg-white/10 transition-all group"
+                >
+                  <UserIcon size={14} className="text-white/40 group-hover:text-white transition-colors" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Account</span>
+                  <ChevronDown size={14} className={`text-white/40 group-hover:text-white transition-all ${showAccountMenu ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showAccountMenu && (
+                  <div className="absolute top-full right-0 mt-4 w-64 bg-black border border-white/10 p-6 shadow-2xl backdrop-blur-xl">
+                    <div className="mb-6">
+                      <span className="text-[10px] uppercase tracking-widest font-black text-white/40 mb-2 block">Identity</span>
+                      <div className="text-xs font-bold text-white truncate">{user.email}</div>
+                    </div>
+                    <Link
+                      to="/admin"
+                      onClick={() => setShowAccountMenu(false)}
+                      className="w-full flex items-center gap-3 py-3 border-t border-white/10 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors"
+                    >
+                      <Layout size={14} />
+                      Admin Panel
+                    </Link>
+                    <button
+                      onClick={() => {
+                        signOut(auth);
+                        setShowAccountMenu(false);
+                      }}
+                      className="w-full flex items-center gap-3 py-3 border-t border-white/10 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors"
+                    >
+                      <LogOut size={14} />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                to="/auth"
+                className="bg-white text-black px-6 py-2 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-gray-200 transition-all"
+              >
+                Login
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Mobile Toggle */}
-        <div className="md:hidden">
+        <div className="md:hidden flex items-center gap-4">
+          {user ? (
+            <Link to="/auth" className="text-white/40 hover:text-white">
+              <UserIcon size={20} />
+            </Link>
+          ) : (
+            <Link to="/auth" className="text-[10px] font-black uppercase tracking-widest text-white/40 leading-none">
+              Login
+            </Link>
+          )}
           <button onClick={() => setIsOpen(!isOpen)} className="p-2 text-white">
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
