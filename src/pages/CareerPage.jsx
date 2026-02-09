@@ -14,6 +14,7 @@ const CareerPage = () => {
     });
     const [loading, setLoading] = useState(jobs.length === 0);
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const fetchJobs = async () => {
@@ -39,9 +40,13 @@ const CareerPage = () => {
     }, []);
 
     const categories = ['All', ...new Set(jobs.map(j => j.category))];
-    const filteredJobs = selectedCategory === 'All'
-        ? jobs
-        : jobs.filter(j => j.category === selectedCategory);
+
+    const filteredJobs = jobs.filter(job => {
+        const matchesCategory = selectedCategory === 'All' || job.category === selectedCategory;
+        const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            job.description.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCategory && matchesSearch;
+    });
 
     return (
         <motion.div
@@ -71,24 +76,48 @@ const CareerPage = () => {
                 </div>
             </section>
 
-            {/* Filter Section */}
-            <section className="py-24 border-b border-white/10">
+            {/* Discovery Bar */}
+            <section className="py-12 border-b border-white/10 sticky top-20 bg-black/80 backdrop-blur-xl z-40">
                 <div className="container mx-auto px-6">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-12">
-                        <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+                    <div className="flex flex-col lg:flex-row gap-8 items-stretch">
+                        {/* Search Component */}
+                        <div className="flex-1 relative group">
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-white transition-colors" size={20} />
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search roles, sectors, or protocols..."
+                                className="w-full bg-white/5 border border-white/10 py-6 pl-16 pr-8 text-white focus:outline-none focus:border-white transition-all font-medium placeholder:text-white/20 uppercase tracking-widest text-[10px]"
+                            />
+                        </div>
+
+                        {/* Category Sidebar/Column replacement - Horizontal row but more visible */}
+                        <div className="flex gap-2 overflow-x-auto pb-4 lg:pb-0 scrollbar-hide">
                             {categories.map(cat => (
                                 <button
                                     key={cat}
                                     onClick={() => setSelectedCategory(cat)}
-                                    className={`px-8 py-3 text-[10px] font-black uppercase tracking-[0.3em] transition-all ${selectedCategory === cat ? 'bg-white text-black' : 'text-white/40 hover:text-white'}`}
+                                    className={`px-8 py-3 text-[10px] font-black uppercase tracking-[0.3em] whitespace-nowrap transition-all border ${selectedCategory === cat ? 'bg-white text-black border-white' : 'text-white/40 border-white/10 hover:border-white/40 hover:text-white'}`}
                                 >
                                     {cat}
                                 </button>
                             ))}
                         </div>
-                        <div className="text-[10px] uppercase tracking-[0.4em] font-black text-white/20">
-                            {filteredJobs.length} Active Protocols Found
+                    </div>
+
+                    <div className="mt-8 flex justify-between items-center">
+                        <div className="text-[10px] uppercase tracking-[0.6em] font-black text-white/20">
+                            Discovery Engine / 0{filteredJobs.length} results
                         </div>
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="text-[10px] uppercase tracking-[0.2em] font-black text-white/40 hover:text-white"
+                            >
+                                Clear Results
+                            </button>
+                        )}
                     </div>
                 </div>
             </section>
