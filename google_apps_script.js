@@ -1,8 +1,6 @@
 /**
- * Google Apps Script for "Smart Productivity" Career Sync v3
+ * Google Apps Script for "Smart Productivity" Career Sync v4
  * Primary Database: Google Sheets
- * 
- * FIX: Improved CORS handling and robustness.
  */
 
 const MASTER_SHEET_NAME = "MASTER_JOBS";
@@ -10,12 +8,12 @@ const MASTER_SHEET_NAME = "MASTER_JOBS";
 function onOpen() {
     SpreadsheetApp.getUi()
         .createMenu('Smart Productivity')
-        .addItem('Setup/Reset Database', 'setupDatabase')
+        .addItem('Setup Database', 'setupDatabase')
         .addToUi();
 }
 
 /**
- * Ensures the master sheet exists and has headers.
+ * Initializes or repairs the Master sheet.
  */
 function setupDatabase() {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -24,20 +22,17 @@ function setupDatabase() {
         master = ss.insertSheet(MASTER_SHEET_NAME);
     }
 
-    // Set headers if the sheet is empty
-    if (master.getLastRow() === 0) {
-        const headers = ["ID", "Title", "Category", "Description", "Fields", "Created At", "Active"];
-        master.getRange(1, 1, 1, headers.length)
-            .setValues([headers])
-            .setFontWeight("bold")
-            .setBackground("#f3f3f3");
-        master.setFrozenRows(1);
-    }
+    // Hard-set columns to match frontend expectations exactly
+    const headers = ["id", "title", "category", "description", "fields", "createdat", "active"];
+    master.getRange(1, 1, 1, headers.length).setValues([headers]);
+    master.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#f3f3f3");
+    master.setFrozenRows(1);
+
     return master;
 }
 
 /**
- * Handles GET requests (FETCHING JOBS)
+ * GET Handler: Fetch Job Listings
  */
 function doGet(e) {
     const action = e.parameter.action;
@@ -45,116 +40,101 @@ function doGet(e) {
         if (action === "getJobs") {
             return createResponse(fetchJobsList());
         }
-        return createResponse({ error: "Invalid protocol action: " + action });
+        return createResponse({ error: "Invalid action: " + action });
     } catch (err) {
-        return createResponse({ error: "GET fail: " + err.toString() });
+        return createResponse({ error: err.toString() });
     }
 }
 
 /**
- * Handles POST requests (CREATE/DELETE/SUBMIT)
- * FIX: Handles text/plain body which is sent to bypass CORS preflight.
+ * POST Handler: Create/Delete/Submit
  */
 function doPost(e) {
     try {
-        let contents;
-        // Text/plain bodies arrive in postData.contents
-        if (e.postData && e.postData.contents) {
-            contents = JSON.parse(e.postData.contents);
-        } else {
-            return createResponse({ error: "No post data received" });
-        }
-
+        const contents = JSON.parse(e.postData.contents);
         const action = contents.action;
 
         if (action === "createJob") return createResponse(handleCreateJob(contents));
         if (action === "submitApplication") return createResponse(handleSubmitApplication(contents));
         if (action === "deleteJob") return createResponse(handleDeleteJob(contents));
 
-        return createResponse({ error: "Invalid POST action: " + action });
+        return createResponse({ error: "Action not recognized" });
     } catch (err) {
-        return createResponse({ error: "POST fail: " + err.toString() });
+        return createResponse({ error: "Execution failed: " + err.toString() });
     }
 }
 
 function fetchJobsList() {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let master = ss.getSheetByName(MASTER_SHEET_NAME);
+    const master = ss.getSheetByName(MASTER_SHEET_NAME);
     if (!master) return [];
 
     const lastRow = master.getLastRow();
     if (lastRow <= 1) return [];
 
-    const values = master.getRange(1, 1, lastRow, master.getLastColumn()).getValues();
-    const headers = values[0];
-    const jobs = [];
-
-    for (let i = 1; i < values.length; i++) {
-        const job = {};
-        headers.forEach((header, index) => {
-            let val = values[i][index];
-            if (header === "Fields" && val) {
-                try { val = JSON.parse(val); } catch (e) { val = []; }
-            }
-            // Normalize header to key (e.g., "Created At" -> "createdat")
-            job[header.toLowerCase().replace(/\s/g, "")] = val;
-        });
-        jobs.push(job);
-    }
-    return jobs;
+    const data = master.getRange(2, 1, lastRow - 1, 7).getValues();
+    return data.map(row => ({
+        id: row[0],
+        title: row[1],
+        category: row[2],
+        description: row[3],
+        fields: row[4] ? JSON.parse(row[4]) : [],
+        createdat: row[5],
+        active: row[6]
+    }));
 }
 
 function handleCreateJob(data) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const master = setupDatabase();
 
-    const id = "protocol_" + Math.random().toString(36).substr(2, 9);
+    const id = "job_" + Math.random().toString(36).substr(2, 6);
     const row = [
         id,
-        data.title,
-        data.category,
-        data.description,
-        JSON.stringify(data.fields),
+        data.title || "Untitled Position",
+        data.category || "General",
+        data.description || "",
+        JSON.stringify(data.fields || []),
         new Date().toISOString(),
         true
     ];
 
-    // Add to Master
+    // Append to metadata sheet
     master.appendRow(row);
 
-    // Create unique tab for applicants
-    let sheetName = data.title;
-    let originalName = sheetName;
+    // Create Job-specific tab for applicants
+    const sheetName = data.title || id;
+    let finalSheetName = sheetName;
     let suffix = 1;
-    while (ss.getSheetByName(sheetName)) {
-        sheetName = originalName + " (" + suffix + ")";
+    while (ss.getSheetByName(finalSheetName)) {
+        finalSheetName = sheetName + " (" + suffix + ")";
         suffix++;
     }
 
-    const jobSheet = ss.insertSheet(sheetName);
-    const headers = ["Applicant Identity", "Submission Date", ...data.fields.map(f => f.label)];
-    jobSheet.getRange(1, 1, 1, headers.length)
-        .setValues([headers])
+    const jobSheet = ss.insertSheet(finalSheetName);
+    const applicantHeaders = ["Source", "Timestamp", ... (data.fields || []).map(f => f.label)];
+    jobSheet.getRange(1, 1, 1, applicantHeaders.length)
+        .setValues([applicantHeaders])
         .setFontWeight("bold")
         .setBackground("#000000")
         .setFontColor("#ffffff");
     jobSheet.setFrozenRows(1);
 
-    return { status: "success", id: id, sheetName: sheetName };
+    return { status: "success", id: id };
 }
 
 function handleSubmitApplication(data) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const jobSheet = ss.getSheetByName(data.jobTitle);
-    if (!jobSheet) return { error: "Target protocol tab [" + data.jobTitle + "] not found" };
+    if (!jobSheet) return { error: "Job tab not found" };
 
     const headers = jobSheet.getRange(1, 1, 1, jobSheet.getLastColumn()).getValues()[0];
-    const responses = data.responses;
-    const rowData = new Array(headers.length).fill("");
+    const rowData = new Array(headers.length).fill("N/A");
 
-    rowData[0] = data.email;
-    rowData[1] = data.submittedAt;
+    rowData[0] = data.email || "Unknown";
+    rowData[1] = new Date().toLocaleString();
 
+    const responses = data.responses || {};
     for (let i = 2; i < headers.length; i++) {
         rowData[i] = responses[headers[i]] || "N/A";
     }
@@ -166,16 +146,16 @@ function handleSubmitApplication(data) {
 function handleDeleteJob(data) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const master = ss.getSheetByName(MASTER_SHEET_NAME);
-    if (!master) return { error: "Central database not found" };
+    if (!master) return { error: "Database offline" };
 
-    const values = master.getDataRange().getValues();
-    for (let i = 1; i < values.length; i++) {
-        if (values[i][0] === data.id) {
+    const rows = master.getDataRange().getValues();
+    for (let i = 1; i < rows.length; i++) {
+        if (rows[i][0] === data.id) {
             master.deleteRow(i + 1);
             return { status: "success" };
         }
     }
-    return { error: "Protocol ID not found" };
+    return { error: "Job ID not found" };
 }
 
 function createResponse(data) {
