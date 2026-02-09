@@ -62,16 +62,17 @@ const AdminPage = () => {
     }, []);
 
     const fetchJobs = async () => {
-        if (SHEETS_API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL') return;
+        if (SHEETS_API_URL.includes('YOUR_GOOGLE_APPS_SCRIPT_URL')) return;
         setFetching(true);
         try {
             const response = await fetch(`${SHEETS_API_URL}?action=getJobs`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
             if (data.error) throw new Error(data.error);
             setJobs(Array.isArray(data) ? data : []);
         } catch (err) {
-            console.error(err);
-            setError('Failed to fetch job protocols from Sheets');
+            console.error('Fetch Jobs Error:', err);
+            setError(`Sync Failure: ${err.message}. Ensure Apps Script is Authorized.`);
         } finally {
             setFetching(false);
         }
@@ -114,6 +115,7 @@ const AdminPage = () => {
         }
 
         try {
+            console.log('Deploying Protocol to:', SHEETS_API_URL);
             const response = await fetch(SHEETS_API_URL, {
                 method: 'POST',
                 headers: {
@@ -124,7 +126,11 @@ const AdminPage = () => {
                     ...formData
                 })
             });
+
+            if (!response.ok) throw new Error(`Connection Error (${response.status})`);
+
             const result = await response.json();
+            console.log('Deployment Result:', result);
 
             if (result.status === 'success') {
                 setSuccess('Job deployment and Sheet sync successful');
@@ -140,10 +146,11 @@ const AdminPage = () => {
                 });
                 fetchJobs();
             } else {
-                throw new Error(result.error || 'Failed to sync with Sheets');
+                throw new Error(result.error || 'Protocol failed at central hub');
             }
         } catch (err) {
-            setError(err.message);
+            console.error('Deployment Detailed Error:', err);
+            setError(`Protocol Failed: ${err.message}. Check browser console for details.`);
         } finally {
             setLoading(false);
             setTimeout(() => setSuccess(''), 3000);

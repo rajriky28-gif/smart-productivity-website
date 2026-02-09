@@ -1,14 +1,8 @@
 /**
- * Google Apps Script for "Smart Productivity" Career Sync v2
+ * Google Apps Script for "Smart Productivity" Career Sync v3
  * Primary Database: Google Sheets
  * 
- * Instructions:
- * 1. Open your Google Sheet.
- * 2. Extensions > Apps Script.
- * 3. Paste this code.
- * 4. Deploy > New Deployment > Web App.
- * 5. Set 'Execute as: Me' and 'Who has access: Anyone'.
- * 6. Copy the Web App URL for your website.
+ * FIX: Improved CORS handling and robustness.
  */
 
 const MASTER_SHEET_NAME = "MASTER_JOBS";
@@ -16,15 +10,22 @@ const MASTER_SHEET_NAME = "MASTER_JOBS";
 function onOpen() {
     SpreadsheetApp.getUi()
         .createMenu('Smart Productivity')
-        .addItem('Prepare Database', 'setupDatabase')
+        .addItem('Setup/Reset Database', 'setupDatabase')
         .addToUi();
 }
 
+/**
+ * Ensures the master sheet exists and has headers.
+ */
 function setupDatabase() {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     let master = ss.getSheetByName(MASTER_SHEET_NAME);
     if (!master) {
         master = ss.insertSheet(MASTER_SHEET_NAME);
+    }
+
+    // Set headers if the sheet is empty
+    if (master.getLastRow() === 0) {
         const headers = ["ID", "Title", "Category", "Description", "Fields", "Created At", "Active"];
         master.getRange(1, 1, 1, headers.length)
             .setValues([headers])
@@ -35,24 +36,44 @@ function setupDatabase() {
     return master;
 }
 
+/**
+ * Handles GET requests (FETCHING JOBS)
+ */
 function doGet(e) {
     const action = e.parameter.action;
-    if (action === "getJobs") return createResponse(fetchJobsList());
-    return createResponse({ error: "Invalid GET action" });
+    try {
+        if (action === "getJobs") {
+            return createResponse(fetchJobsList());
+        }
+        return createResponse({ error: "Invalid protocol action: " + action });
+    } catch (err) {
+        return createResponse({ error: "GET fail: " + err.toString() });
+    }
 }
 
+/**
+ * Handles POST requests (CREATE/DELETE/SUBMIT)
+ * FIX: Handles text/plain body which is sent to bypass CORS preflight.
+ */
 function doPost(e) {
     try {
-        const data = JSON.parse(e.postData.contents);
-        const action = data.action;
+        let contents;
+        // Text/plain bodies arrive in postData.contents
+        if (e.postData && e.postData.contents) {
+            contents = JSON.parse(e.postData.contents);
+        } else {
+            return createResponse({ error: "No post data received" });
+        }
 
-        if (action === "createJob") return createResponse(handleCreateJob(data));
-        if (action === "submitApplication") return createResponse(handleSubmitApplication(data));
-        if (action === "deleteJob") return createResponse(handleDeleteJob(data));
+        const action = contents.action;
 
-        return createResponse({ error: "Invalid POST action" });
+        if (action === "createJob") return createResponse(handleCreateJob(contents));
+        if (action === "submitApplication") return createResponse(handleSubmitApplication(contents));
+        if (action === "deleteJob") return createResponse(handleDeleteJob(contents));
+
+        return createResponse({ error: "Invalid POST action: " + action });
     } catch (err) {
-        return createResponse({ error: err.toString() });
+        return createResponse({ error: "POST fail: " + err.toString() });
     }
 }
 
@@ -61,9 +82,10 @@ function fetchJobsList() {
     let master = ss.getSheetByName(MASTER_SHEET_NAME);
     if (!master) return [];
 
-    const values = master.getDataRange().getValues();
-    if (values.length <= 1) return [];
+    const lastRow = master.getLastRow();
+    if (lastRow <= 1) return [];
 
+    const values = master.getRange(1, 1, lastRow, master.getLastColumn()).getValues();
     const headers = values[0];
     const jobs = [];
 
@@ -71,10 +93,11 @@ function fetchJobsList() {
         const job = {};
         headers.forEach((header, index) => {
             let val = values[i][index];
-            if (header === "Fields") {
+            if (header === "Fields" && val) {
                 try { val = JSON.parse(val); } catch (e) { val = []; }
             }
-            job[header.toLowerCase().replace(" ", "")] = val;
+            // Normalize header to key (e.g., "Created At" -> "createdat")
+            job[header.toLowerCase().replace(/\s/g, "")] = val;
         });
         jobs.push(job);
     }
@@ -96,14 +119,15 @@ function handleCreateJob(data) {
         true
     ];
 
-    master.insertRowAfter(1);
-    master.getRange(2, 1, 1, row.length).setValues([row]);
+    // Add to Master
+    master.appendRow(row);
 
     // Create unique tab for applicants
     let sheetName = data.title;
+    let originalName = sheetName;
     let suffix = 1;
     while (ss.getSheetByName(sheetName)) {
-        sheetName = data.title + " (" + suffix + ")";
+        sheetName = originalName + " (" + suffix + ")";
         suffix++;
     }
 
@@ -122,7 +146,7 @@ function handleCreateJob(data) {
 function handleSubmitApplication(data) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const jobSheet = ss.getSheetByName(data.jobTitle);
-    if (!jobSheet) return { error: "Target protocol tab not found" };
+    if (!jobSheet) return { error: "Target protocol tab [" + data.jobTitle + "] not found" };
 
     const headers = jobSheet.getRange(1, 1, 1, jobSheet.getLastColumn()).getValues()[0];
     const responses = data.responses;
@@ -142,20 +166,16 @@ function handleSubmitApplication(data) {
 function handleDeleteJob(data) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const master = ss.getSheetByName(MASTER_SHEET_NAME);
-    if (!master) return { error: "Database not found" };
+    if (!master) return { error: "Central database not found" };
 
     const values = master.getDataRange().getValues();
     for (let i = 1; i < values.length; i++) {
         if (values[i][0] === data.id) {
-            const title = values[i][1];
             master.deleteRow(i + 1);
-            // Optionally delete the tab? User said "i refresh the job goes" 
-            // but we might want to keep data for history. 
-            // For now, let's keep the tab but remove from master.
-            return { status: "success", removed: title };
+            return { status: "success" };
         }
     }
-    return { error: "Protocol not found" };
+    return { error: "Protocol ID not found" };
 }
 
 function createResponse(data) {
