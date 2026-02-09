@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { db, storage } from '../firebase';
-import { doc, getDoc, collection, addDoc } from 'firebase/firestore';
+import { storage } from '../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import {
     ArrowLeft,
@@ -13,6 +12,9 @@ import {
     Send,
     FileText
 } from 'lucide-react';
+
+// REPLACE THIS with your Google Apps Script Web App URL
+const SHEETS_API_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
 
 const JobApplicationPage = () => {
     const { jobId } = useParams();
@@ -29,16 +31,23 @@ const JobApplicationPage = () => {
 
     useEffect(() => {
         const fetchJob = async () => {
+            if (SHEETS_API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
+                setError('Protocol configuration missing');
+                setLoading(false);
+                return;
+            }
             try {
-                const docRef = doc(db, 'jobs', jobId);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    setJob(docSnap.data());
+                const response = await fetch(`${SHEETS_API_URL}?action=getJobs`);
+                const jobList = await response.json();
+                const currentJob = jobList.find(j => j.id === jobId);
+
+                if (currentJob) {
+                    setJob(currentJob);
                 } else {
-                    setError('Position protocol not found');
+                    setError('Position protocol not found in Sheets');
                 }
             } catch (err) {
-                setError('Authentication error with central hub');
+                setError('Authentication error with central database');
             } finally {
                 setLoading(false);
             }
@@ -64,49 +73,57 @@ const JobApplicationPage = () => {
         setSubmitting(true);
         setError('');
 
+        if (SHEETS_API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
+            setError('API configuration required for transmission');
+            setSubmitting(false);
+            return;
+        }
+
         try {
             const uploadedFiles = {};
 
-            // Upload files first
+            // Upload files to Firebase Storage (for reliable hosting)
             for (const [fieldId, file] of Object.entries(files)) {
                 if (file) {
                     const storageRef = ref(storage, `applications/${jobId}/${Date.now()}_${file.name}`);
                     const snapshot = await uploadBytes(storageRef, file);
                     const url = await getDownloadURL(snapshot.ref);
-                    uploadedFiles[fieldId] = url;
+                    // Use label as key for Sheets compatibility
+                    const fieldLabel = job.fields.find(f => f.id === fieldId)?.label || fieldId;
+                    uploadedFiles[fieldLabel] = url;
                 }
             }
 
-            // Prepare submissions
+            // Map standard form data to labels
+            const responses = {};
+            job.fields.forEach(field => {
+                if (field.type !== 'file') {
+                    responses[field.label] = formData[field.id] || 'N/A';
+                }
+            });
+
+            // Prepare submission for Sheets
             const submissionData = {
-                jobId,
+                action: 'submitApplication',
                 jobTitle: job.title,
-                responses: { ...formData, ...uploadedFiles },
-                submittedAt: new Date().toISOString(),
+                email: formData['2'] || 'anonymous@protocol.com', // fallback to email field ID '2' or anon
+                responses: { ...responses, ...uploadedFiles },
+                submittedAt: new Date().toLocaleString(),
             };
 
-            // Save to Firestore
-            await addDoc(collection(db, 'applications'), submissionData);
-
             // Sync to Google Sheets
-            try {
-                // REPLACE THIS URL with your Google Apps Script Web App URL after deployment
-                const SHEETS_WEBHOOK_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
+            const response = await fetch(SHEETS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify(submissionData)
+            });
+            const result = await response.json();
 
-                if (SHEETS_WEBHOOK_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
-                    await fetch(SHEETS_WEBHOOK_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(submissionData)
-                    });
-                }
-            } catch (syncErr) {
-                console.warn('Sheets sync failed, but application was saved to Firebase:', syncErr);
+            if (result.status === 'success') {
+                setSuccess(true);
+                setTimeout(() => navigate('/careers'), 4000);
+            } else {
+                throw new Error(result.error || 'Sheets sync protocol failure');
             }
-
-            setSuccess(true);
-            setTimeout(() => navigate('/careers'), 4000);
         } catch (err) {
             console.error(err);
             setError('Submission protocol failed. Please verify connection.');

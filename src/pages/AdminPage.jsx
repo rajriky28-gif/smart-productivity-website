@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { auth, db } from '../firebase';
-import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import {
     Plus,
@@ -14,13 +13,18 @@ import {
     AlertCircle,
     CheckCircle,
     ArrowLeft,
-    ChevronDown
+    ChevronDown,
+    Loader2
 } from 'lucide-react';
+
+// REPLACE THIS with your Google Apps Script Web App URL
+const SHEETS_API_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
 
 const AdminPage = () => {
     const [jobs, setJobs] = useState([]);
     const [isCreating, setIsCreating] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [fetching, setFetching] = useState(false);
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
 
@@ -58,12 +62,18 @@ const AdminPage = () => {
     }, []);
 
     const fetchJobs = async () => {
+        if (SHEETS_API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL') return;
+        setFetching(true);
         try {
-            const querySnapshot = await getDocs(collection(db, 'jobs'));
-            const jobList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setJobs(jobList);
+            const response = await fetch(`${SHEETS_API_URL}?action=getJobs`);
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+            setJobs(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error(err);
+            setError('Failed to fetch job protocols from Sheets');
+        } finally {
+            setFetching(false);
         }
     };
 
@@ -91,6 +101,12 @@ const AdminPage = () => {
         setLoading(true);
         setError('');
 
+        if (SHEETS_API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
+            setError('Please configure Google Sheets API URL first');
+            setLoading(false);
+            return;
+        }
+
         if (formData.fields.some(f => !f.label.trim())) {
             setError('Please provide labels for all fields');
             setLoading(false);
@@ -98,23 +114,31 @@ const AdminPage = () => {
         }
 
         try {
-            await addDoc(collection(db, 'jobs'), {
-                ...formData,
-                createdAt: new Date().toISOString(),
-                active: true
+            const response = await fetch(SHEETS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'createJob',
+                    ...formData
+                })
             });
-            setSuccess('Job deployment successful');
-            setIsCreating(false);
-            setFormData({
-                title: '',
-                category: '',
-                description: '',
-                fields: [
-                    { id: '1', type: 'text', label: 'Full Name', required: true },
-                    { id: '2', type: 'text', label: 'Email', required: true }
-                ]
-            });
-            fetchJobs();
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                setSuccess('Job deployment and Sheet sync successful');
+                setIsCreating(false);
+                setFormData({
+                    title: '',
+                    category: '',
+                    description: '',
+                    fields: [
+                        { id: '1', type: 'text', label: 'Full Name', required: true },
+                        { id: '2', type: 'text', label: 'Email', required: true }
+                    ]
+                });
+                fetchJobs();
+            } else {
+                throw new Error(result.error || 'Failed to sync with Sheets');
+            }
         } catch (err) {
             setError(err.message);
         } finally {
@@ -125,11 +149,26 @@ const AdminPage = () => {
 
     const deleteJob = async (id) => {
         if (!window.confirm('Terminate this job protocol?')) return;
+        setLoading(true);
         try {
-            await deleteDoc(doc(db, 'jobs', id));
-            fetchJobs();
+            const response = await fetch(SHEETS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'deleteJob',
+                    id: id
+                })
+            });
+            const result = await response.json();
+            if (result.status === 'success') {
+                fetchJobs();
+            } else {
+                throw new Error(result.error);
+            }
         } catch (err) {
             console.error(err);
+            setError('Failed to terminate protocol');
+        } finally {
+            setLoading(false);
         }
     };
 

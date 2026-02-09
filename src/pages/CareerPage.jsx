@@ -1,23 +1,36 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { db } from '../firebase';
-import { collection, getDocs } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Search, Zap } from 'lucide-react';
 
+// REPLACE THIS with your Google Apps Script Web App URL
+const SHEETS_API_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
+
 const CareerPage = () => {
-    const [jobs, setJobs] = useState([]);
-    const [loading, setLoading] = useState(true);
+    // Initial state from localStorage for "Instant Loading"
+    const [jobs, setJobs] = useState(() => {
+        const cached = localStorage.getItem('smart_jobs_cache');
+        return cached ? JSON.parse(cached) : [];
+    });
+    const [loading, setLoading] = useState(jobs.length === 0);
     const [selectedCategory, setSelectedCategory] = useState('All');
 
     useEffect(() => {
         const fetchJobs = async () => {
+            if (SHEETS_API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
+                setLoading(false);
+                return;
+            }
             try {
-                const querySnapshot = await getDocs(collection(db, 'jobs'));
-                const jobList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                setJobs(jobList);
+                const response = await fetch(`${SHEETS_API_URL}?action=getJobs`);
+                const jobList = await response.json();
+
+                if (Array.isArray(jobList)) {
+                    setJobs(jobList);
+                    localStorage.setItem('smart_jobs_cache', JSON.stringify(jobList));
+                }
             } catch (err) {
-                console.error(err);
+                console.error('Sheets fetch failed:', err);
             } finally {
                 setLoading(false);
             }
