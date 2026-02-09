@@ -29,7 +29,6 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
-    { name: 'Home', href: '/' },
     { name: 'Products', href: '/products' },
     { name: 'Philosophy', href: '/philosophy' },
     { name: 'Impact', href: '/impact' },
@@ -119,15 +118,6 @@ const Navbar = () => {
 
         {/* Mobile Toggle */}
         <div className="md:hidden flex items-center gap-4">
-          {user ? (
-            <Link to="/auth" className="text-white/40 hover:text-white">
-              <UserIcon size={20} />
-            </Link>
-          ) : (
-            <Link to="/auth" className="text-[10px] font-black uppercase tracking-widest text-white/40 leading-none">
-              Login
-            </Link>
-          )}
           <button onClick={() => setIsOpen(!isOpen)} className="p-2 text-white">
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -152,6 +142,44 @@ const Navbar = () => {
                 {link.name}
               </Link>
             ))}
+
+            <div className="w-full h-px bg-white/10 my-4" />
+
+            {user ? (
+              <div className="flex flex-col items-center space-y-8 w-full">
+                <div className="text-center">
+                  <span className="text-[10px] uppercase tracking-widest font-black text-white/40 mb-2 block">Identity</span>
+                  <div className="text-base font-bold text-white">{user.email}</div>
+                </div>
+                {user.email === 'rajriky28@gmail.com' && (
+                  <Link
+                    to="/admin"
+                    onClick={() => setIsOpen(false)}
+                    className="text-2xl font-black uppercase tracking-widest text-white hover:text-white/60 transition-colors"
+                  >
+                    Admin Panel
+                  </Link>
+                )}
+                <button
+                  onClick={() => {
+                    signOut(auth);
+                    setIsOpen(false);
+                  }}
+                  className="flex items-center gap-3 text-red-500 font-black uppercase tracking-widest text-sm"
+                >
+                  <LogOut size={18} />
+                  Logout Protocol
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/auth"
+                onClick={() => setIsOpen(false)}
+                className="bg-white text-black px-12 py-4 text-sm font-black uppercase tracking-[0.3em] hover:bg-gray-200 transition-all"
+              >
+                Login
+              </Link>
+            )}
           </div>
         </motion.div>
       )}
