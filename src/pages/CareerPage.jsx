@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { ArrowUpRight, Search, Zap } from 'lucide-react';
 
 // REPLACE THIS with your Google Apps Script Web App URL
-const SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbxENZ-sgXCbhXM9oJjkIWfKHDQmDZfmnUHq3_FyvZ271iR4pU7Sw8MKGZlYG2egPKzA/exec';
+const SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbzomCgIrh7kGWuq4jiYIGTXrCexN_gh7arXru1YNtW05GJgwZNrSWpDqFXKaAZCmYzx/exec';
 
 const CareerPage = () => {
     // Initial state from localStorage for "Instant Loading"
