@@ -114,6 +114,9 @@ const JobApplicationPage = () => {
             // Sync to Google Sheets
             const response = await fetch(SHEETS_API_URL, {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8',
+                },
                 body: JSON.stringify(submissionData)
             });
             const result = await response.json();
